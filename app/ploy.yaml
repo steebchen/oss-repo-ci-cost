@@ -1,0 +1,5 @@
+kind: dynamic
+build: pnpm build
+out: dist
+db:
+  DB: default
