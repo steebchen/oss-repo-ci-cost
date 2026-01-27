@@ -12,7 +12,7 @@ export function createClient(token) {
 }
 
 /**
- * Get workflow runs for a repository
+ * Get workflow runs for a repository with pagination
  * @param {Octokit} octokit - Octokit instance
  * @param {string} owner - Repository owner
  * @param {string} repo - Repository name
@@ -22,9 +22,9 @@ export function createClient(token) {
 export async function getWorkflowRuns(octokit, owner, repo, options = {}) {
   const {
     per_page = 100,
-    page = 1,
     status = 'completed',
     created = null, // Date filter, e.g., '>=2026-01-01'
+    paginate = false, // Whether to fetch all pages
   } = options;
 
   try {
@@ -32,7 +32,6 @@ export async function getWorkflowRuns(octokit, owner, repo, options = {}) {
       owner,
       repo,
       per_page,
-      page,
       status
     };
 
@@ -40,8 +39,18 @@ export async function getWorkflowRuns(octokit, owner, repo, options = {}) {
       params.created = created;
     }
 
-    const response = await octokit.rest.actions.listWorkflowRunsForRepo(params);
-    return response.data.workflow_runs;
+    if (paginate) {
+      // Paginate through all results
+      const allRuns = await octokit.paginate(
+        octokit.rest.actions.listWorkflowRunsForRepo,
+        params,
+        (response) => response.data
+      );
+      return allRuns;
+    } else {
+      const response = await octokit.rest.actions.listWorkflowRunsForRepo(params);
+      return response.data.workflow_runs;
+    }
   } catch (error) {
     throw new Error(`Failed to fetch workflow runs: ${error.message}`);
   }
