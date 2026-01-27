@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import { initPloyForDev } from "@meetploy/nextjs";
 
 if (process.env.NODE_ENV === "development") {
-  await initPloyForDev();
+  initPloyForDev();
 }
 
 const nextConfig: NextConfig = {
