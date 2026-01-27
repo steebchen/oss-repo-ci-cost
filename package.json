@@ -1,0 +1,27 @@
+{
+  "name": "github-actions-cost-calculator",
+  "version": "1.0.0",
+  "description": "Calculate theoretical GitHub Actions costs for OSS repositories using official pricing",
+  "main": "src/index.js",
+  "type": "module",
+  "bin": {
+    "gh-actions-cost": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "github",
+    "actions",
+    "cost",
+    "calculator",
+    "workflow",
+    "ci-cd"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "octokit": "^4.0.2"
+  }
+}
