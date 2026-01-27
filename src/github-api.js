@@ -91,3 +91,25 @@ export function parseRepository(repoString) {
     repo: match[2]
   };
 }
+
+/**
+ * Get jobs for a specific workflow run
+ * @param {Octokit} octokit - Octokit instance
+ * @param {string} owner - Repository owner
+ * @param {string} repo - Repository name
+ * @param {number} runId - Workflow run ID
+ * @returns {Promise<Array>} Jobs data
+ */
+export async function getWorkflowRunJobs(octokit, owner, repo, runId) {
+  try {
+    const response = await octokit.rest.actions.listJobsForWorkflowRun({
+      owner,
+      repo,
+      run_id: runId,
+      per_page: 100
+    });
+    return response.data.jobs;
+  } catch (error) {
+    throw new Error(`Failed to fetch jobs for run ${runId}: ${error.message}`);
+  }
+}

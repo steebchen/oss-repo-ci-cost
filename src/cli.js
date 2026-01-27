@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { createClient, getWorkflowRuns, getWorkflowRunTiming, parseRepository } from './github-api.js';
-import { calculateCost, formatCost, formatMinutes } from './pricing.js';
+import { createClient, getWorkflowRuns, getWorkflowRunTiming, getWorkflowRunJobs, parseRepository } from './github-api.js';
+import { calculateCost, calculateCostFromJobs, formatCost, formatMinutes } from './pricing.js';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
@@ -52,25 +52,42 @@ async function main() {
     // Process each run
     for (const run of runs) {
       try {
-        const timing = await getWorkflowRunTiming(octokit, owner, repo, run.id);
-        const cost = calculateCost(timing);
+        // First try to get timing data (works better for private repos)
+        let cost;
+        let durationMinutes;
+
+        try {
+          const timing = await getWorkflowRunTiming(octokit, owner, repo, run.id);
+          cost = calculateCost(timing);
+          durationMinutes = timing.run_duration_ms / 1000 / 60;
+
+          // If billable data shows 0 cost (public repo), fall back to jobs-based calculation
+          if (cost.total === 0) {
+            throw new Error('No billable data, falling back to jobs');
+          }
+        } catch {
+          // Fall back to jobs-based calculation for public repos
+          const jobs = await getWorkflowRunJobs(octokit, owner, repo, run.id);
+          cost = calculateCostFromJobs(jobs);
+          durationMinutes = cost.breakdown.UBUNTU.minutes + cost.breakdown.WINDOWS.minutes + cost.breakdown.MACOS.minutes;
+        }
 
         console.log(`Run #${run.run_number}: ${run.name}`);
         console.log(`  ID: ${run.id}`);
         console.log(`  Status: ${run.conclusion}`);
         console.log(`  Date: ${new Date(run.created_at).toLocaleDateString()}`);
-        console.log(`  Duration: ${formatMinutes(timing.run_duration_ms / 1000 / 60)}`);
+        console.log(`  Duration: ${formatMinutes(durationMinutes)}`);
 
         if (cost.breakdown.UBUNTU.minutes > 0) {
-          console.log(`  Linux: ${formatMinutes(cost.breakdown.UBUNTU.minutes)} → ${formatCost(cost.breakdown.UBUNTU.cost)}`);
+          console.log(`  Linux: ${formatMinutes(cost.breakdown.UBUNTU.minutes)} -> ${formatCost(cost.breakdown.UBUNTU.cost)}`);
           totalLinuxMinutes += cost.breakdown.UBUNTU.minutes;
         }
         if (cost.breakdown.WINDOWS.minutes > 0) {
-          console.log(`  Windows: ${formatMinutes(cost.breakdown.WINDOWS.minutes)} → ${formatCost(cost.breakdown.WINDOWS.cost)}`);
+          console.log(`  Windows: ${formatMinutes(cost.breakdown.WINDOWS.minutes)} -> ${formatCost(cost.breakdown.WINDOWS.cost)}`);
           totalWindowsMinutes += cost.breakdown.WINDOWS.minutes;
         }
         if (cost.breakdown.MACOS.minutes > 0) {
-          console.log(`  macOS: ${formatMinutes(cost.breakdown.MACOS.minutes)} → ${formatCost(cost.breakdown.MACOS.cost)}`);
+          console.log(`  macOS: ${formatMinutes(cost.breakdown.MACOS.minutes)} -> ${formatCost(cost.breakdown.MACOS.cost)}`);
           totalMacOSMinutes += cost.breakdown.MACOS.minutes;
         }
 
@@ -79,11 +96,7 @@ async function main() {
         totalCost += cost.total;
         successCount++;
       } catch (error) {
-        if (error.message.includes('not available')) {
-          console.log(`Run #${run.run_number}: Timing data not available (likely public repo)\n`);
-        } else {
-          console.error(`Run #${run.run_number}: Error - ${error.message}\n`);
-        }
+        console.error(`Run #${run.run_number}: Error - ${error.message}\n`);
       }
     }
 
@@ -105,8 +118,7 @@ async function main() {
     console.log('─'.repeat(60));
 
     if (successCount === 0) {
-      console.log('\nNote: No timing data available. This is expected for:');
-      console.log('- Public repositories (Actions are free)');
+      console.log('\nNote: No data available. Possible reasons:');
       console.log('- Repositories without proper API access');
       console.log('\nSet GITHUB_TOKEN environment variable for authenticated requests.');
     }

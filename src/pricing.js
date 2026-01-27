@@ -88,3 +88,68 @@ export function formatCost(cost) {
 export function formatMinutes(minutes) {
   return `${minutes.toFixed(2)} min`;
 }
+
+/**
+ * Detect runner OS from job labels
+ * @param {Array} labels - Job runner labels
+ * @returns {string} OS type (UBUNTU, WINDOWS, MACOS)
+ */
+export function detectRunnerOS(labels) {
+  const labelsLower = labels.map(l => l.toLowerCase());
+
+  if (labelsLower.some(l => l.includes('macos') || l.includes('mac-os'))) {
+    return 'MACOS';
+  }
+  if (labelsLower.some(l => l.includes('windows'))) {
+    return 'WINDOWS';
+  }
+  // Default to Ubuntu/Linux
+  return 'UBUNTU';
+}
+
+/**
+ * Calculate cost from jobs data (for public repos where billable data isn't available)
+ * @param {Array} jobs - Jobs from workflow run
+ * @returns {Object} Cost breakdown
+ */
+export function calculateCostFromJobs(jobs) {
+  const costs = {
+    linux: 0,
+    windows: 0,
+    macos: 0,
+    total: 0,
+    breakdown: {
+      UBUNTU: { minutes: 0, cost: 0 },
+      WINDOWS: { minutes: 0, cost: 0 },
+      MACOS: { minutes: 0, cost: 0 }
+    }
+  };
+
+  for (const job of jobs) {
+    if (!job.started_at || !job.completed_at) continue;
+
+    const startTime = new Date(job.started_at);
+    const endTime = new Date(job.completed_at);
+    const durationMs = endTime - startTime;
+    const minutes = durationMs / 1000 / 60;
+
+    const os = detectRunnerOS(job.labels || []);
+
+    costs.breakdown[os].minutes += minutes;
+
+    if (os === 'UBUNTU') {
+      costs.breakdown[os].cost += minutes * PRICING.LINUX;
+      costs.linux += minutes * PRICING.LINUX;
+    } else if (os === 'WINDOWS') {
+      costs.breakdown[os].cost += minutes * PRICING.WINDOWS;
+      costs.windows += minutes * PRICING.WINDOWS;
+    } else if (os === 'MACOS') {
+      costs.breakdown[os].cost += minutes * PRICING.MACOS;
+      costs.macos += minutes * PRICING.MACOS;
+    }
+  }
+
+  costs.total = costs.linux + costs.windows + costs.macos;
+
+  return costs;
+}
