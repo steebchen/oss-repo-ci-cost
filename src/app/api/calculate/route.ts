@@ -81,7 +81,8 @@ async function runCalculation(
   slug: string
 ) {
   try {
-    const result = await calculateRepoCost(owner, repo, 7);
+    const token = process.env.GITHUB_TOKEN;
+    const result = await calculateRepoCost(owner, repo, 7, token);
 
     await db
       .prepare(
