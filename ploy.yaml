@@ -3,3 +3,5 @@ build: pnpm build
 out: dist
 db:
   DB: default
+workflow:
+  COST_CALCULATOR: calculate_repo_cost

@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { getPloyContext } from "@meetploy/nextjs";
 import { calculateRepoCost } from "@/lib/github";
 
+interface RepoCostRow {
+  execution_id: string | null;
+  status: string;
+  slug: string;
+}
+
 export async function POST(request: Request) {
   const { env } = getPloyContext();
 
@@ -43,13 +49,16 @@ export async function POST(request: Request) {
       `SELECT * FROM repo_costs WHERE slug = ? AND status = 'pending'`
     )
       .bind(slug)
-      .first();
+      .first<RepoCostRow>();
 
     if (inProgress) {
-      return NextResponse.json({ status: "pending" });
+      return NextResponse.json({
+        status: "pending",
+        executionId: inProgress.execution_id,
+      });
     }
 
-    // Insert or update as pending
+    // Insert as pending
     await env.DB.prepare(
       `INSERT INTO repo_costs (owner, repo, slug, status, updated_at)
        VALUES (?, ?, ?, 'pending', CURRENT_TIMESTAMP)
@@ -58,34 +67,33 @@ export async function POST(request: Request) {
       .bind(owner, repo, slug)
       .run();
 
-    // Run calculation in background (non-blocking)
-    // For simplicity, we'll run it inline but we could use a queue in production
-    runCalculation(env.DB, owner, repo, slug).catch((error) => {
-      console.error("Background calculation error:", error);
-    });
+    // Try to use workflow if available, otherwise fall back to direct calculation
+    if (env.COST_CALCULATOR) {
+      // Trigger the workflow
+      const { executionId } = await env.COST_CALCULATOR.trigger({
+        owner,
+        repo,
+        slug,
+        days: 7,
+      });
 
-    return NextResponse.json({ status: "pending" });
-  } catch (error) {
-    console.error("Calculate error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
+      // Store execution ID for status tracking
+      await env.DB.prepare(
+        `UPDATE repo_costs SET execution_id = ? WHERE slug = ?`
+      )
+        .bind(executionId, slug)
+        .run();
 
-async function runCalculation(
-  db: PloyEnv["DB"],
-  owner: string,
-  repo: string,
-  slug: string
-) {
-  try {
-    const token = process.env.GITHUB_TOKEN;
-    const result = await calculateRepoCost(owner, repo, 7, token);
+      return NextResponse.json({ status: "pending", executionId });
+    }
 
-    await db
-      .prepare(
+    // Fallback: direct calculation (for dev/test environments without workflow support)
+    console.log("Workflow not available, using direct calculation");
+
+    try {
+      const result = await calculateRepoCost(owner, repo, 7, process.env.GITHUB_TOKEN);
+
+      await env.DB.prepare(
         `UPDATE repo_costs SET
          status = 'completed',
          days_analyzed = ?,
@@ -101,33 +109,37 @@ async function runCalculation(
          updated_at = CURRENT_TIMESTAMP
        WHERE slug = ?`
       )
-      .bind(
-        result.daysAnalyzed,
-        result.totalRuns,
-        result.analyzedRuns,
-        result.linuxMinutes,
-        result.windowsMinutes,
-        result.macosMinutes,
-        result.actualCost,
-        result.monthlyCost,
-        result.yearlyCost,
-        slug
-      )
-      .run();
+        .bind(
+          result.daysAnalyzed,
+          result.totalRuns,
+          result.analyzedRuns,
+          result.linuxMinutes,
+          result.windowsMinutes,
+          result.macosMinutes,
+          result.actualCost,
+          result.monthlyCost,
+          result.yearlyCost,
+          slug
+        )
+        .run();
 
-    console.log(`Completed calculation for ${slug}`);
+      return NextResponse.json({ status: "completed" });
+    } catch (calcError) {
+      console.error("Direct calculation error:", calcError);
+
+      await env.DB.prepare(
+        `UPDATE repo_costs SET status = 'error', error_message = ?, updated_at = CURRENT_TIMESTAMP WHERE slug = ?`
+      )
+        .bind(String(calcError), slug)
+        .run();
+
+      return NextResponse.json({ status: "error", error: String(calcError) });
+    }
   } catch (error) {
-    console.error(`Calculation failed for ${slug}:`, error);
-
-    await db
-      .prepare(
-        `UPDATE repo_costs SET
-         status = 'error',
-         error_message = ?,
-         updated_at = CURRENT_TIMESTAMP
-       WHERE slug = ?`
-      )
-      .bind(error instanceof Error ? error.message : "Unknown error", slug)
-      .run();
+    console.error("Calculate error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

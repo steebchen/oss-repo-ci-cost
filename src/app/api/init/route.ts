@@ -11,6 +11,7 @@ export async function GET() {
       repo TEXT NOT NULL,
       slug TEXT UNIQUE NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending',
+      execution_id TEXT,
       days_analyzed INTEGER,
       total_runs INTEGER,
       analyzed_runs INTEGER,
