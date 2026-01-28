@@ -8,12 +8,9 @@ importers:
 
   .:
     dependencies:
-      '@meetploy/cli':
-        specifier: ^1.11.4
-        version: 1.11.4
       '@meetploy/nextjs':
-        specifier: ^1.1.0
-        version: 1.1.0
+        specifier: ^1.1.1
+        version: 1.1.1
       next:
         specifier: 16.1.5
         version: 16.1.5(@babel/core@7.28.6)(@playwright/test@1.58.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -27,6 +24,9 @@ importers:
         specifier: 19.2.3
         version: 19.2.3(react@19.2.3)
     devDependencies:
+      '@meetploy/cli':
+        specifier: ^1.12.1
+        version: 1.12.1
       '@playwright/test':
         specifier: ^1.58.0
         version: 1.58.0
@@ -832,12 +832,12 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@meetploy/cli@1.11.4':
-    resolution: {integrity: sha512-39tyIeKx5iSBaYFNRzMyW1dX9yKhcG2mtcZ+1NWcdMQFiQVHWfkFucEmOO4znfg4S4Ed+gaGiF6ZFlHlMknTrA==}
+  '@meetploy/cli@1.12.1':
+    resolution: {integrity: sha512-EMVZG3tCwWyWBk9i0J9H7GB/KtLUWoPkEuTAvYjjKcsL2bfiWl6Rv9det3w8/6OgXwgXG3VqNB+LZ3gT8zQ2sQ==}
     hasBin: true
 
-  '@meetploy/nextjs@1.1.0':
-    resolution: {integrity: sha512-XncHmVOWKAvogf0RgTXmGpyteDZLOlinFp/s32Q6N7tA4RO5vsldzpsf2OS3vLSdQAUDCl27K5L+c8hjqDq4sQ==}
+  '@meetploy/nextjs@1.1.1':
+    resolution: {integrity: sha512-ltFd87nrYsoyvBXNU/BOhPfk4AbgvJfLz6k/tZUngDCn/Xj/WWlhuwvW8jY/U3x5lSn6EnbNWg10d4bACww4Qw==}
 
   '@meetploy/types@1.1.0':
     resolution: {integrity: sha512-Z8Tl5U8vHX3mmQGH/gpI5qWEoMimhy1mJJe/o6b0KyhNZrQ0jhhsA3mxRMvM5teai+Y35g4Lbvw67KzhLvAzfA==}
@@ -3885,7 +3885,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@meetploy/cli@1.11.4':
+  '@meetploy/cli@1.12.1':
     dependencies:
       '@hono/node-server': 1.19.9(hono@4.11.7)
       better-sqlite3: 11.10.0
@@ -3901,7 +3901,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@meetploy/nextjs@1.1.0':
+  '@meetploy/nextjs@1.1.1':
     dependencies:
       '@meetploy/types': 1.1.0
 
