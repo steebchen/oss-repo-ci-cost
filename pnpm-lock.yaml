@@ -9,11 +9,11 @@ importers:
   .:
     dependencies:
       '@meetploy/nextjs':
-        specifier: ^1.1.1
-        version: 1.1.1
+        specifier: ^1.3.0
+        version: 1.3.0
       '@meetploy/types':
-        specifier: ^1.1.1
-        version: 1.1.1
+        specifier: ^1.2.0
+        version: 1.2.0
       next:
         specifier: 16.1.5
         version: 16.1.5(@babel/core@7.28.6)(@playwright/test@1.58.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -28,8 +28,8 @@ importers:
         version: 19.2.3(react@19.2.3)
     devDependencies:
       '@meetploy/cli':
-        specifier: ^1.12.1
-        version: 1.12.1
+        specifier: ^1.12.2
+        version: 1.12.2
       '@playwright/test':
         specifier: ^1.58.0
         version: 1.58.0
@@ -835,15 +835,15 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@meetploy/cli@1.12.1':
-    resolution: {integrity: sha512-EMVZG3tCwWyWBk9i0J9H7GB/KtLUWoPkEuTAvYjjKcsL2bfiWl6Rv9det3w8/6OgXwgXG3VqNB+LZ3gT8zQ2sQ==}
+  '@meetploy/cli@1.12.2':
+    resolution: {integrity: sha512-RJ2Z6UfDEqvU0wQdWkoufI/IT/7AhroKFUuDss2YL2ejAMdTso8sDmHxyDI5pmSofXdEMFmPvePOXGVfLzvK9Q==}
     hasBin: true
 
-  '@meetploy/nextjs@1.1.1':
-    resolution: {integrity: sha512-ltFd87nrYsoyvBXNU/BOhPfk4AbgvJfLz6k/tZUngDCn/Xj/WWlhuwvW8jY/U3x5lSn6EnbNWg10d4bACww4Qw==}
+  '@meetploy/nextjs@1.3.0':
+    resolution: {integrity: sha512-YK+4oa/oOsXTegGjnMkqLRyem+jJ0MEALKTJo2vTCvmNSl2Ftui3pV3JDmX4poem2w+6p1AAWkg89I7VtLuZVw==}
 
-  '@meetploy/types@1.1.1':
-    resolution: {integrity: sha512-thFOSd0HQWGaesRtcCVOvIJkVeBClIqs/bi/A6jU9d0PohuOO1aAizHC1IWHNYjpGrwcBovlYYt3pn8/i+nc9A==}
+  '@meetploy/types@1.2.0':
+    resolution: {integrity: sha512-Vw5SM0fTgp0yB2DDHMbGxzcx+zgcNVHWg91iQ+d0wvcwLVV5zJdGOKY55xK8H0a/qfCAFZq6aMuqGdMS1mJhpg==}
 
   '@napi-rs/wasm-runtime@0.2.12':
     resolution: {integrity: sha512-ZVWUcfwY4E/yPitQJl481FjFo3K22D6qF0DuFH6Y/nbnE11GY5uguDxZMGXPQ8WQ0128MXQD7TnfHyK4oWoIJQ==}
@@ -3888,7 +3888,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@meetploy/cli@1.12.1':
+  '@meetploy/cli@1.12.2':
     dependencies:
       '@hono/node-server': 1.19.9(hono@4.11.7)
       better-sqlite3: 11.10.0
@@ -3904,11 +3904,11 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@meetploy/nextjs@1.1.1':
+  '@meetploy/nextjs@1.3.0':
     dependencies:
-      '@meetploy/types': 1.1.1
+      '@meetploy/types': 1.2.0
 
-  '@meetploy/types@1.1.1': {}
+  '@meetploy/types@1.2.0': {}
 
   '@napi-rs/wasm-runtime@0.2.12':
     dependencies:
